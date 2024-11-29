@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Net;
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 using System.Transactions;
 
 
@@ -22,7 +23,7 @@ namespace exp2
         /// <param name="min">Минимальное значение диапазона.</param>
         /// <param name="max">Максимальное значение диапазона.</param>
         /// <returns>Произведение значений f, удовлетворяющих условию.</returns>
-        public static double CalculateInOneDimentional(BaseFunction func, double[] T, double min, double max)
+        public static double CalculateInOneDimentional(InitFunction func, List<int> T, double min, double max)
         {
             double product = 1;
             foreach (double element in T)
@@ -43,42 +44,51 @@ namespace exp2
         static void Main()
         {
             // Пример одномерного массива
-            double[] T = { 1, 2, 3, 4, 5 };
+            List<int> T = ExecuteFile.GetArrayFromFile("../../../readfile.txt");
+
             double min = 1;
             double max = 10;
 
             // Первый вызов с использованием функции f1
-            BaseFunction baseFunc = new BaseFunction();
+            BaseFunction1 baseFunc = new();
             double productF1 = CalculateInOneDimentional(baseFunc, T, min, max);
-            Console.WriteLine($"Произведение значений f1 в диапазоне [{min}, {max}]: {productF1}");
-
+            ExecuteFile.SetResultToFile("../../../writefile.txt", $"Произведение значений f1 в диапазоне [{min}, {max}]: {productF1}");
+            
             // Второй вызов с использованием функции f2
-            DerivedFunction derivedFunc = new DerivedFunction();
+            BaseFunction2 derivedFunc = new();
             double productF2 = CalculateInOneDimentional(derivedFunc, T, min, max);
-            Console.WriteLine($"Произведение значений f2 в диапазоне [{min}, {max}]: {productF2}");
+            ExecuteFile.SetResultToFile("../../../writefile.txt", $"Произведение значений f2 в диапазоне [{min}, {max}]: {productF2}");
         }
     }
 
     /// <summary>
-    /// Базовый класс, содержащий виртуальный метод
+    /// Абстрактный класс, инициализирующий метод f
     /// </summary>
-    public class BaseFunction
+    public abstract class InitFunction
+    {
+        public abstract double f(double x);
+    }
+
+    /// <summary>
+    /// Первый базовый класс, реализация метода f = f1
+    /// </summary>
+    public class BaseFunction1 : InitFunction
     {
         /// <summary>
-        /// Виртуальный метод f = f1
+        /// Переопределённый метод f = f1
         /// </summary>
         /// <param name="x">Аргумент функции</param>
         /// <returns>Квадрат числа x</returns>
-        public virtual double f(double x)
+        public override double f(double x)
         {
             return x * x;
         }
     }
 
     /// <summary>
-    /// Производный класс, содержащий переопределяемый метод f
+    /// Второй базовый класс, реализация метода f = f2
     /// </summary>
-    public class DerivedFunction : BaseFunction
+    public class BaseFunction2 : InitFunction
     {
         /// <summary>
         /// Переопределённый метод f = f2
@@ -88,6 +98,46 @@ namespace exp2
         public override double f(double x)
         {
             return x + 1;
+        }
+    }
+
+
+    /// <summary>
+    /// Класс для чтения/записи файла.
+    /// </summary>
+    class ExecuteFile
+    {
+        /// <summary>
+        /// Чтение файла path и получение значения чисел в формате списка.
+        /// </summary>
+        /// <param name="path">Путь к файлу.</param>
+        /// <returns>Список значений из файла.</returns>
+        public static List<int> GetArrayFromFile(string path)
+        {
+            List<int> array = new();
+            StreamReader sr = new(path);
+            Console.WriteLine("Чтение значений из файла {0}", path);
+            string text = sr.ReadToEnd();
+            string[] str = text.Split("\t");
+            for (int i = 0; i < str.Length; i++)
+            {
+                array.Add(int.Parse(str[i]));
+            }
+            return array;
+        }
+
+        /// <summary>
+        /// Запись результата вычислений в файл path.
+        /// </summary>
+        /// <param name="path">Путь к файлу.</param>
+        /// <param name="result">Строка, которая записывается в файл.</param>
+        public static void SetResultToFile(string path, string result)
+        {
+            StreamWriter sw = new(path, true);
+            Console.WriteLine("Запись результата в файл {0}", path);
+            sw.WriteLine(result);
+            Console.WriteLine("Результат записан в файл.");
+            sw.Close();
         }
     }
 }
