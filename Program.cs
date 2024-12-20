@@ -1,150 +1,194 @@
-﻿using System;
-using System.ComponentModel;
-using System.Net;
-using System.Numerics;
-using System.Security.Cryptography.X509Certificates;
-using System.Transactions;
-
-
-namespace exp2
+﻿namespace exp2
 {
     /// <summary>
     /// Основной класс программы, содержащий метод Main.
     /// </summary>
     class Program
     {
-        // Метод для вычисления произведения значений функции f для элементов массива T, попадающих в заданный диапазон
-
-        /// <summary>
-        /// Метод для проверки на значения функции на принадлежность к значению.
-        /// </summary>
-        /// <param name="func">Функция f (виртуальная или переопределённая).</param>
-        /// <param name="T">Одномерный массив.</param>
-        /// <param name="min">Минимальное значение диапазона.</param>
-        /// <param name="max">Максимальное значение диапазона.</param>
-        /// <returns>Произведение значений f, удовлетворяющих условию.</returns>
-        public static double CalculateInOneDimentional(IBaseFunction func, List<int> T, double min, double max)
-        {
-            double product = 1;
-            foreach (double element in T)
-            {
-                double fValue = func.f(element);
-                // Проверка попадания значения f(T[i]) в заданный диапазон
-                if (fValue >= min && fValue <= max)
-                {
-                    product *= fValue;
-                }
-            } 
-            return product;
-        }
-
         /// <summary>
         /// Исполняемый метод Main
         /// </summary>
         static void Main()
         {
-            // Пример одномерного массива
-            List<int> T = ExecuteFile.GetArrayFromFile("../../../readfile.txt");
+            // пример был взят из задания 2.4.3 для одномерных массивов:
+            // "Проверить, что в массиве есть хотя бы один элемент, равный заданному числу. Если такой элемент есть, найти его номер."
 
-            double min = 1;
-            double max = 10;
+            Console.Write("Введите число, которое хотите найти в списке: ");
+            int search = int.Parse(Console.ReadLine());
 
-            // Первый вызов с использованием функции f1
-            BaseFunction1 baseFunc = new();
-            double productF1 = CalculateInOneDimentional(baseFunc, T, min, max);
-            ExecuteFile.SetResultToFile("../../../writefile.txt", $"Произведение значений f1 в диапазоне [{min}, {max}]: {productF1}");
-
-            // Второй вызов с использованием функции f2
-            BaseFunction2 derivedFunc = new();
-            double productF2 = CalculateInOneDimentional(derivedFunc, T, min, max);
-            ExecuteFile.SetResultToFile("../../../writefile.txt", $"Произведение значений f2 в диапазоне [{min}, {max}]: {productF2}");
-        }
-    }
-
-    /// <summary>
-    /// Интерфейс - инициализатор функции f
-    /// </summary>
-    interface IBaseFunction
-    {
-        /// <summary>
-        /// инициализировать метод f
-        /// </summary>
-        /// <param name="x">принимаемое аргумент - число x</param>
-        /// <returns></returns>
-        double f(double x);
-    }
-
-    /// <summary>
-    /// Первый базовый класс, реализация метода f = f1
-    /// </summary>
-    public class BaseFunction1 : IBaseFunction
-    { 
-        /// <summary>
-        /// Переопределённый метод f = f1
-        /// </summary>
-        /// <param name="x">Аргумент функции</param>
-        /// <returns>Квадрат числа x</returns>
-        public double f(double x)
-        {
-            return Math.Pow(x, x);
-        }
-    }
-
-    /// <summary>
-    /// Второй базовый класс, реализация метода f = f2
-    /// </summary>
-    public class BaseFunction2 : IBaseFunction
-    {
-        /// <summary>
-        /// Переопределённый метод f = f2
-        /// </summary>
-        /// <param name="x"></param>
-        /// <returns>Инкрементированное число x</returns>
-        public double f(double x)
-        {
-            return Math.Log(x);
-        }
-    }
-
-
-
-    /// <summary>
-    /// Класс для чтения/записи файла.
-    /// </summary>
-    class ExecuteFile
-    {
-        /// <summary>
-        /// Чтение файла path и получение значения чисел в формате списка.
-        /// </summary>
-        /// <param name="path">Путь к файлу.</param>
-        /// <returns>Список значений из файла.</returns>
-        public static List<int> GetArrayFromFile(string path)
-        {
-            List<int> array = new();
-            StreamReader sr = new(path);
-            Console.WriteLine("Чтение значений из файла {0}", path);
-            string text = sr.ReadToEnd();
-            string[] str = text.Split("\t");
-            for (int i = 0; i < str.Length; i++)
+            CustomListElement elem1 = new CustomListElement(14);
+            CustomListElement elem2 = new CustomListElement(48);
+            CustomListElement elem3 = new CustomListElement(48);
+            CustomList testList = new CustomList(elem1);
+            testList.AddLast(elem2);
+            testList.AddLast(elem3);
+            
+            int founds = 0;
+            
+            for (int i = 0; i < testList.GetLength(); i++)
             {
-                array.Add(int.Parse(str[i]));
-            }
-            return array;
-        }
+                var elem = testList.GetElementAtIndex(i);
 
-        /// <summary>
-        /// Запись результата вычислений в файл path.
-        /// </summary>
-        /// <param name="path">Путь к файлу.</param>
-        /// <param name="result">Строка, которая записывается в файл.</param>
-        public static void SetResultToFile(string path, string result)
-        {
-            StreamWriter sw = new(path, true);
-            Console.WriteLine("Запись результата в файл {0}", path);
-            sw.WriteLine(result);
-            Console.WriteLine("Результат записан в файл.");
-            sw.Close();
+                if (elem.Value == search)
+                {
+                    Console.WriteLine("Найден элемент под номером {0} с таким же значением.", i);
+                    founds++;
+                }
+
+            }
+            if (founds == 0)
+            {
+                Console.WriteLine("Значений в списке не найдено.");
+            }
+
+
         }
     }
 
+    /// <summary>
+    /// Элемент списка.
+    /// </summary>
+    class CustomListElement
+    {
+        /// <summary>
+        /// Значение элемента.
+        /// </summary>
+        public int Value;
+
+        /// <summary>
+        /// Ссылка на следующий элемент
+        /// </summary>
+        public CustomListElement Next;
+
+        /// <summary>
+        /// Создать элемент со значением value
+        /// </summary>
+        /// <param name="value"></param>
+        public CustomListElement(int value)
+        {
+            Value = value;
+        }
+    }
+
+    /// <summary>
+    /// Создать однонаправленный список
+    /// </summary>
+    class CustomList
+    {
+        /// <summary>
+        /// "Голова" списка (ссылка на первый элемент в списке)
+        /// </summary>
+        private CustomListElement head;
+
+        /// <summary>
+        /// Создать пустой список.
+        /// </summary>
+        public CustomList()
+        {
+            head = null;
+        }
+
+        /// <summary>
+        /// Создать список с одним элементов внутри.
+        /// </summary>
+        /// <param name="element">Первый элемент списка.</param>
+        public CustomList(CustomListElement element)
+        {
+            head = element;
+        }
+
+        /// <summary>
+        /// Метод для добавления элемента в конец списка
+        /// </summary>
+        /// <param name="value">Значение элемента списка</param>
+        public void AddLast(int value)
+        {
+            CustomListElement newElement = new CustomListElement(value);
+            if (head == null)
+            {
+                head = newElement;  // Если список пуст, новый элемент становится головой
+            }
+            else
+            {
+                CustomListElement current = head;
+                // Находим последний элемент
+                while (current.Next != null)
+                {
+                    current = current.Next;
+                }
+                // Добавляем новый элемент в конец
+                current.Next = newElement;
+            }
+        }
+
+        /// <summary>
+        /// Метод для добавления элемента в конец списка
+        /// </summary>
+        /// <param name="element">Элемент списка, который необходимо добавить.</param>
+        public void AddLast(CustomListElement element)
+        {
+            CustomListElement newElement = element;
+            if (head == null)
+            {
+                head = newElement;  // Если список пуст, новый элемент становится головой
+            }
+            else
+            {
+                CustomListElement current = head;
+                // Находим последний элемент
+                while (current.Next != null)
+                {
+                    current = current.Next;
+                }
+                // Добавляем новый элемент в конец
+                current.Next = newElement;
+            }
+        }
+
+        /// <summary>
+        /// Получить элемент по заданному индексу
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public CustomListElement GetElementAtIndex(int index)
+        {
+            CustomListElement current = head;
+            int count = 0;
+
+            while (current != null)
+            {
+                if (count == index)
+                    return current;
+                count++;
+                current = current.Next;
+            }
+
+            return null; // Индекс вне диапазона
+        }
+
+        /// <summary>
+        /// Получить длину списка
+        /// </summary>
+        public int GetLength()
+        {
+            CustomListElement current = head;
+            int length = 0;
+
+            while (current != null)
+            {
+                length++;
+                current = current.Next;
+            }
+
+            return length;
+        }
+
+        /// <summary>
+        /// Очистить весь список.
+        /// </summary>
+        public void Clear()
+        {
+            head = null;
+        }
+    }
 }
